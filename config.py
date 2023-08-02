@@ -17,4 +17,4 @@ def get_doc_path():
 
 
 def get_icons_path():
-    return "editor"
+    return "editor/icons"
