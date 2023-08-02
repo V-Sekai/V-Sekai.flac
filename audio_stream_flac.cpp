@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  audio_stream_flac.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include <cstddef>
 #define DR_FLAC_IMPLEMENTATION
 #define DR_FLAC_NO_STDIO
@@ -9,8 +39,7 @@
 #include "core/io/file_access.h"
 
 int AudioStreamPlaybackFLAC::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
-	if(!active) {
+	if (!active) {
 		return 0;
 	}
 
@@ -26,15 +55,15 @@ int AudioStreamPlaybackFLAC::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	}
 
 	while (todo && active) {
-		float* pSamples = (float*)memalloc(todo * pFlac->channels * sizeof(float));
+		float *pSamples = (float *)memalloc(todo * pFlac->channels * sizeof(float));
 		float *buffer = (float *)p_buffer;
 		if (start_buffer > 0) {
 			buffer = (buffer + start_buffer * 2);
 		}
 		int mixed = drflac_read_pcm_frames_f32(pFlac, todo, pSamples);
-		for(int i = 0; i<mixed; i++){
+		for (int i = 0; i < mixed; i++) {
 			buffer[i * 2] = pSamples[i * flac_stream->channels];
-			buffer[i*2 + 1] = pSamples[i * flac_stream->channels + flac_stream->channels-1];
+			buffer[i * 2 + 1] = pSamples[i * flac_stream->channels + flac_stream->channels - 1];
 
 			if (loop_fade_remaining < FADE_SIZE) {
 				p_buffer[p_frames - todo] += loop_fade[loop_fade_remaining] * (float(FADE_SIZE - loop_fade_remaining) / float(FADE_SIZE));
@@ -45,11 +74,10 @@ int AudioStreamPlaybackFLAC::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			++frames_mixed;
 
 			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
-				float* pSamples2 = (float*)memalloc(FADE_SIZE * pFlac->channels * sizeof(float));
+				float *pSamples2 = (float *)memalloc(FADE_SIZE * pFlac->channels * sizeof(float));
 				int samples_mixed = drflac_read_pcm_frames_f32(pFlac, FADE_SIZE, pSamples2);
 				for (int i = 0; i < samples_mixed; i++) {
-					loop_fade[i] = AudioFrame(pSamples2[i * flac_stream->channels], pSamples2[i * flac_stream->channels + flac_stream->channels-1]);
-
+					loop_fade[i] = AudioFrame(pSamples2[i * flac_stream->channels], pSamples2[i * flac_stream->channels + flac_stream->channels - 1]);
 				}
 				memfree(pSamples2);
 				loop_fade_remaining = 0;
@@ -80,16 +108,13 @@ int AudioStreamPlaybackFLAC::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	}
 
 	return frames_mixed_this_step;
-
 }
 
 float AudioStreamPlaybackFLAC::get_stream_sampling_rate() {
-
 	return flac_stream->sample_rate;
 }
 
 void AudioStreamPlaybackFLAC::start(double p_from_pos) {
-
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
@@ -160,7 +185,6 @@ Ref<AudioStreamPlayback> AudioStreamFLAC::instantiate_playback() {
 }
 
 String AudioStreamFLAC::get_stream_name() const {
-
 	return "";
 }
 
@@ -169,10 +193,9 @@ void AudioStreamFLAC::clear_data() {
 }
 
 void AudioStreamFLAC::set_data(const Vector<uint8_t> &p_data) {
-
 	int src_data_len = p_data.size();
 
-	const uint8_t* src_datar = p_data.ptr();
+	const uint8_t *src_datar = p_data.ptr();
 
 	drflac *pflac = drflac_open_memory(src_datar, src_data_len, nullptr);
 	ERR_FAIL_COND(pflac == nullptr);
@@ -197,7 +220,6 @@ void AudioStreamFLAC::set_loop(bool p_enable) {
 }
 
 bool AudioStreamFLAC::has_loop() const {
-
 	return loop;
 }
 
@@ -248,7 +270,6 @@ int AudioStreamFLAC::get_bar_beats() const {
 }
 
 void AudioStreamFLAC::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamFLAC::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamFLAC::get_data);
 
