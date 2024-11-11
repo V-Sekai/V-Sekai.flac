@@ -111,7 +111,7 @@ Ref<AudioStreamFLAC> ResourceImporterFLAC::import_flac(const String &p_path) {
 	return flac_stream;
 }
 
-Error ResourceImporterFLAC::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterFLAC::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];
